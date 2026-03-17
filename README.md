@@ -3,7 +3,7 @@
 This repository contains a full-stack scaffold for a school exam platform built with:
 
 - Static frontend using plain HTML, CSS, and vanilla JavaScript
-- Firebase Authentication, Firestore, and Storage
+- Firebase Authentication and Firestore
 - FastAPI backend for secure marking and report generation
 - Firebase security rules and indexes
 
@@ -53,7 +53,7 @@ firebase/
 2. Enable Google Authentication.
 3. Restrict sign-in to your Google Workspace domain where appropriate.
 4. Create Firestore.
-5. Replace the placeholder config in `frontend/js/firebase-init.js`.
+5. Add your Firebase web app config in `frontend/js/firebase-init.js`.
 6. Copy `.env.example` to `.env`.
 7. Provide backend credentials through `GOOGLE_APPLICATION_CREDENTIALS` or ambient Firebase credentials.
 
@@ -128,7 +128,15 @@ Suggested document ids:
 - Set the start command to `uvicorn app:app --host 0.0.0.0 --port $PORT`.
 - Add environment variables from `.env.example`.
 - Provide Firebase service account credentials through Render environment files or secret storage.
+- `FIREBASE_STORAGE_BUCKET` is optional and can be omitted if you are not using Firebase Storage.
 
 ## Static hosting notes
 
-The frontend is plain static files and is compatible with GitHub Pages or Firebase Hosting. If hosted separately from the backend, set the backend URL via `window.EXAM_PLATFORM_API_BASE_URL` before loading `frontend/js/api.js`, or adapt `api.js` to read from a deployment-specific config file.
+The frontend is plain static files and is compatible with GitHub Pages or Firebase Hosting. This scaffold includes a root [index.html](c:/Users/usfal/OneDrive%20-%20NSW%20Department%20of%20Education/Documents/My%20Coding%20Projects/exam-platform/index.html) that redirects GitHub Pages visitors to [frontend/login.html](c:/Users/usfal/OneDrive%20-%20NSW%20Department%20of%20Education/Documents/My%20Coding%20Projects/exam-platform/frontend/login.html).
+
+For this repository:
+
+- Production frontend host: `https://koglint.github.io/exam-platform/`
+- Production backend host: `https://exam-platform-455r.onrender.com`
+
+Also make sure Firebase Authentication allows `koglint.github.io` as an authorised domain.

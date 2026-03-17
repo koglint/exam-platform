@@ -8,6 +8,15 @@ from services.config import settings
 _app = None
 
 
+def _firebase_options() -> dict:
+    options = {
+        "projectId": settings.firebase_project_id,
+    }
+    if settings.firebase_storage_bucket:
+        options["storageBucket"] = settings.firebase_storage_bucket
+    return options
+
+
 def get_firestore_client():
     global _app
     if _app is None:
@@ -15,10 +24,7 @@ def get_firestore_client():
             credential = credentials.Certificate(settings.firebase_credentials_path)
             _app = firebase_admin.initialize_app(
                 credential,
-                {
-                    "projectId": settings.firebase_project_id,
-                    "storageBucket": settings.firebase_storage_bucket,
-                },
+                _firebase_options(),
             )
         elif (
             settings.firebase_project_id
@@ -36,17 +42,9 @@ def get_firestore_client():
             )
             _app = firebase_admin.initialize_app(
                 credential,
-                {
-                    "projectId": settings.firebase_project_id,
-                    "storageBucket": settings.firebase_storage_bucket,
-                },
+                _firebase_options(),
             )
         else:
-            _app = firebase_admin.initialize_app(
-                options={
-                    "projectId": settings.firebase_project_id,
-                    "storageBucket": settings.firebase_storage_bucket,
-                }
-            )
+            _app = firebase_admin.initialize_app(options=_firebase_options())
 
     return firestore.client()

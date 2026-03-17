@@ -9,7 +9,7 @@ load_dotenv()
 @dataclass(frozen=True)
 class Settings:
     firebase_project_id: str = os.getenv("FIREBASE_PROJECT_ID", "replace-with-project-id")
-    firebase_storage_bucket: str = os.getenv("FIREBASE_STORAGE_BUCKET", "replace-with-project-id.appspot.com")
+    firebase_storage_bucket: str = os.getenv("FIREBASE_STORAGE_BUCKET", "")
     firebase_credentials_path: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
     firebase_client_email: str = os.getenv("FIREBASE_CLIENT_EMAIL", "")
     firebase_private_key: str = os.getenv("FIREBASE_PRIVATE_KEY", "")
