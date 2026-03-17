@@ -15,6 +15,58 @@ import { db } from "./firebase-init.js";
 import { postJson } from "./api.js";
 
 const adminIdentity = "prototype-admin";
+const demoQuestions = [
+  {
+    id: "q1",
+    order: 1,
+    stemHtml: "<p>Which planet is known as the Red Planet?</p>",
+    options: ["Earth", "Mars", "Venus", "Jupiter"],
+    alternateWording: ["Which planet is famous for looking red in the night sky?"],
+    glossaryTerms: [{ term: "planet", definition: "A large object that travels around a star." }],
+    topic: "Space",
+    correctOption: 1
+  },
+  {
+    id: "q2",
+    order: 2,
+    stemHtml: "<p>What is 9 x 6?</p>",
+    options: ["42", "54", "56", "63"],
+    alternateWording: ["Multiply 9 by 6."],
+    glossaryTerms: [{ term: "multiply", definition: "To combine equal groups to find a total." }],
+    topic: "Number",
+    correctOption: 1
+  },
+  {
+    id: "q3",
+    order: 3,
+    stemHtml: "<p>Which Australian city is the capital of New South Wales?</p>",
+    options: ["Canberra", "Melbourne", "Sydney", "Newcastle"],
+    alternateWording: ["Which city is the capital of the state of New South Wales?"],
+    glossaryTerms: [{ term: "capital", definition: "The main city of a state or country." }],
+    topic: "Geography",
+    correctOption: 2
+  },
+  {
+    id: "q4",
+    order: 4,
+    stemHtml: "<p>Which sentence uses a verb?</p>",
+    options: ["Blue sky", "Running quickly", "Tall building", "Happy dog"],
+    alternateWording: ["Choose the option that shows an action word."],
+    glossaryTerms: [{ term: "verb", definition: "A word that shows an action or state." }],
+    topic: "Grammar",
+    correctOption: 1
+  },
+  {
+    id: "q5",
+    order: 5,
+    stemHtml: "<p>When water is heated to 100 degrees Celsius at sea level, what change happens?</p>",
+    options: ["It freezes", "It melts", "It boils", "It disappears"],
+    alternateWording: ["What happens to water at 100°C?"],
+    glossaryTerms: [{ term: "boils", definition: "Changes from a liquid into a gas because of heat." }],
+    topic: "Science",
+    correctOption: 2
+  }
+];
 
 function setStatus(message, variant = "") {
   const el = document.querySelector("#admin-status");
@@ -193,6 +245,40 @@ async function bindExamForm() {
       await setDoc(doc(db, "exams", examRef.id), { questionCount: 1 }, { merge: true });
       setStatus(`Exam draft created: ${examRef.id}`, "success");
       form.reset();
+    } catch (error) {
+      setStatus(error.message, "error");
+    }
+  });
+
+  document.querySelector("#seed-demo-exam")?.addEventListener("click", async () => {
+    try {
+      const examRef = await addDoc(collection(db, "exams"), {
+        name: "Demo Year 7 Mixed Skills Quiz",
+        description: "Five short multiple-choice questions for testing the platform workflow.",
+        questionCount: demoQuestions.length,
+        createdBy: adminIdentity,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      const batch = writeBatch(db);
+      demoQuestions.forEach((question) => {
+        batch.set(doc(db, "exams", examRef.id, "questions", question.id), {
+          order: question.order,
+          stemHtml: question.stemHtml,
+          imageUrl: "",
+          options: question.options,
+          alternateWording: question.alternateWording,
+          glossaryTerms: question.glossaryTerms,
+          topic: question.topic
+        });
+        batch.set(doc(db, "exams", examRef.id, "answerKeys", question.id), {
+          correctOption: question.correctOption
+        });
+      });
+      await batch.commit();
+
+      setStatus(`Demo exam created: ${examRef.id}`, "success");
     } catch (error) {
       setStatus(error.message, "error");
     }

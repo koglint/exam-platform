@@ -94,6 +94,19 @@ Suggested document ids:
 - Roster documents use lowercase email addresses.
 - Attempts use `{sessionId}_{studentEmail}` so resume logic is straightforward.
 
+## Quick demo data
+
+Use the CSV files in [mock-data/students.csv](c:/Users/usfal/OneDrive%20-%20NSW%20Department%20of%20Education/Documents/My%20Coding%20Projects/exam-platform/mock-data/students.csv) and [mock-data/teachers.csv](c:/Users/usfal/OneDrive%20-%20NSW%20Department%20of%20Education/Documents/My%20Coding%20Projects/exam-platform/mock-data/teachers.csv) to test the roster upload flow.
+
+For a fast end-to-end demo:
+
+- Open admin
+- Upload the mock student roster
+- Click `Create Demo Exam`
+- Copy the created exam id
+- Activate a session for class `7A`
+- Use one of the generated student codes on the student entry page
+
 ## Frontend responsibilities
 
 - Authenticate with Firebase Google Sign-In
