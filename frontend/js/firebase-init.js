@@ -6,14 +6,14 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-
 // Public Firebase config is safe for the browser. Privileged work stays in the backend.
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCm5r49uPJFZgAD7IrY5dirN8oiPQN0VPE",
-  authDomain: "exam-platform-d8f77.firebaseapp.com",
-  projectId: "exam-platform-d8f77",
-  storageBucket: "exam-platform-d8f77.firebasestorage.app",
-  messagingSenderId: "420780761952",
-  appId: "1:420780761952:web:10aa0908709e8ca5a2f405",
-  measurementId: "G-J1CR7212XZ"
+  apiKey: "AIzaSyDFfX_VlpX7K1b6ALKjI7sELUvA5O2Gsb4",
+  authDomain: "education-e838d.firebaseapp.com",
+  projectId: "education-e838d",
+  storageBucket: "education-e838d.firebasestorage.app",
+  messagingSenderId: "86818330422",
+  appId: "1:86818330422:web:bf9a7985e1b6e117218597"
 };
 
 const app = initializeApp(firebaseConfig);

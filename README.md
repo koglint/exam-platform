@@ -52,7 +52,7 @@ firebase/
 1. Create a Firebase project.
 2. Enable Google Authentication.
 3. Restrict sign-in to your Google Workspace domain where appropriate.
-4. Create Firestore and Firebase Storage.
+4. Create Firestore.
 5. Replace the placeholder config in `frontend/js/firebase-init.js`.
 6. Copy `.env.example` to `.env`.
 7. Provide backend credentials through `GOOGLE_APPLICATION_CREDENTIALS` or ambient Firebase credentials.
@@ -124,6 +124,7 @@ Suggested document ids:
 ## Render deployment notes
 
 - Deploy `backend/` as a Python web service.
+- Pin Python via [runtime.txt](c:/Users/usfal/OneDrive%20-%20NSW%20Department%20of%20Education/Documents/My%20Coding%20Projects/exam-platform/backend/runtime.txt) so Render does not default to an unsupported newer version.
 - Set the start command to `uvicorn app:app --host 0.0.0.0 --port $PORT`.
 - Add environment variables from `.env.example`.
 - Provide Firebase service account credentials through Render environment files or secret storage.
