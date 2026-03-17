@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Platform | Enter Code</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body data-page="enter-code">
+  <main class="page-shell narrow">
+    <section class="card">
+      <h1>Enter Exam Code</h1>
+      <p class="lead">Your teacher will provide a code when the exam session is active.</p>
+      <form id="enter-code-form">
+        <label for="exam-code">Exam code</label>
+        <input id="exam-code" name="examCode" type="text" maxlength="12" autocomplete="off" required>
+        <button class="primary-button" type="submit">Continue</button>
+      </form>
+      <div id="enter-code-status" class="notice" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/exam.js"></script>
+</body>
+</html>

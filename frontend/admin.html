@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Platform | Admin</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body data-page="admin">
+  <main class="page-shell">
+    <section class="card">
+      <h1>Teacher Admin</h1>
+      <p class="lead">Manage rosters, exams, sessions, and live monitoring from one place.</p>
+    </section>
+
+    <section class="card admin-grid">
+      <div>
+        <h2>Roster Upload</h2>
+        <form id="roster-form">
+          <label for="students-file">Students CSV</label>
+          <input id="students-file" name="studentsFile" type="file" accept=".csv">
+          <label for="teachers-file">Teachers CSV</label>
+          <input id="teachers-file" name="teachersFile" type="file" accept=".csv">
+          <button class="primary-button" type="submit">Upload rosters</button>
+        </form>
+      </div>
+
+      <div>
+        <h2>Create Exam</h2>
+        <form id="exam-form">
+          <label for="exam-name">Exam name</label>
+          <input id="exam-name" name="name" type="text" required>
+          <label for="exam-description">Description</label>
+          <textarea id="exam-description" name="description" rows="4"></textarea>
+          <button class="primary-button" type="submit">Create exam draft</button>
+        </form>
+      </div>
+
+      <div>
+        <h2>Session Control</h2>
+        <form id="session-form">
+          <label for="session-exam-id">Exam ID</label>
+          <input id="session-exam-id" name="examId" type="text" required>
+          <label for="session-class-id">Class ID</label>
+          <input id="session-class-id" name="classId" type="text" required>
+          <button class="primary-button" name="action" value="activate" type="submit">Create / Activate Session</button>
+          <button class="secondary-button" name="action" value="deactivate" type="submit">Deactivate Session</button>
+          <button class="secondary-button" id="release-results" type="button">Release Results</button>
+        </form>
+      </div>
+
+      <div>
+        <h2>Attempt Control</h2>
+        <label for="attempt-id">Attempt ID</label>
+        <input id="attempt-id" type="text" placeholder="sessionId_student@email">
+        <button class="secondary-button" id="reopen-attempt" type="button">Reopen Submitted Attempt</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Live Monitoring</h2>
+      <div id="monitoring-table" class="table-shell"></div>
+    </section>
+
+    <section class="card">
+      <h2>Status</h2>
+      <div id="admin-status" class="notice" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>

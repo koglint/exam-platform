@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Platform | Question</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body data-page="question">
+  <main class="page-shell exam-layout">
+    <aside class="card sidebar">
+      <h2>Navigation</h2>
+      <div id="question-grid" class="question-grid" aria-label="Question navigation"></div>
+      <div class="accessibility-controls">
+        <h3>Accessibility</h3>
+        <button type="button" id="tts-button">Read aloud</button>
+        <button type="button" id="alternate-wording-toggle">Toggle alternate wording</button>
+        <button type="button" data-font-size="increase">Larger text</button>
+        <button type="button" data-font-size="decrease">Smaller text</button>
+        <button type="button" id="contrast-toggle">High contrast</button>
+      </div>
+    </aside>
+
+    <section class="card question-panel">
+      <header class="question-header">
+        <p id="question-counter" class="eyebrow">Question</p>
+        <div id="activity-status" class="notice small" aria-live="polite"></div>
+      </header>
+
+      <article>
+        <div id="question-text" class="question-text"></div>
+        <div id="question-glossary" class="glossary"></div>
+        <img id="question-image" class="question-image hidden" alt="">
+        <form id="question-form" class="options-list"></form>
+      </article>
+
+      <footer class="actions spread">
+        <button id="prev-question" class="secondary-button" type="button">Previous</button>
+        <div class="actions">
+          <button id="next-question" class="secondary-button" type="button">Next</button>
+          <button id="submit-attempt" class="primary-button" type="button">Submit exam</button>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script type="module" src="./js/question.js"></script>
+</body>
+</html>

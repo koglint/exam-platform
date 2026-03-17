@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isNswEducationUser() {
+      return signedIn() && request.auth.token.email.matches('.*@education\\.nsw\\.gov\\.au$');
+    }
+
+    function userEmail() {
+      return lower(request.auth.token.email);
+    }
+
+    function isTeacher() {
+      return isNswEducationUser() && exists(/databases/$(database)/documents/teachers/$(userEmail()));
+    }
+
+    function isStudent() {
+      return isNswEducationUser() && exists(/databases/$(database)/documents/students/$(userEmail()));
+    }
+
+    match /students/{email} {
+      allow read: if isTeacher() || (isStudent() && email == userEmail());
+      allow write: if isTeacher();
+    }
+
+    match /teachers/{email} {
+      allow read: if isTeacher() && email == userEmail();
+      allow write: if isTeacher();
+    }
+
+    match /classes/{classId} {
+      allow read, write: if isTeacher();
+    }
+
+    match /exams/{examId} {
+      allow read: if isTeacher() || isStudent();
+      allow write: if isTeacher();
+
+      match /questions/{questionId} {
+        allow read: if isTeacher() || isStudent();
+        allow write: if isTeacher();
+      }
+
+      match /answerKeys/{questionId} {
+        allow read, write: if isTeacher();
+      }
+
+      match /images/{imageId} {
+        allow read: if isTeacher() || isStudent();
+        allow write: if isTeacher();
+      }
+    }
+
+    match /examSessions/{sessionId} {
+      allow read: if isTeacher() || isStudent();
+      allow write: if isTeacher();
+    }
+
+    match /attempts/{attemptId} {
+      allow read: if isTeacher() || (isStudent() && resource.data.studentEmail == userEmail());
+      allow create: if isStudent() && request.resource.data.studentEmail == userEmail();
+      allow update: if isTeacher() || (
+        isStudent() &&
+        resource.data.studentEmail == userEmail() &&
+        !resource.data.locked &&
+        !('marking' in request.resource.data)
+      );
+      allow delete: if false;
+
+      match /responses/{questionId} {
+        allow read: if isTeacher() || (
+          isStudent() &&
+          get(/databases/$(database)/documents/attempts/$(attemptId)).data.studentEmail == userEmail()
+        );
+        allow write: if isTeacher() || (
+          isStudent() &&
+          get(/databases/$(database)/documents/attempts/$(attemptId)).data.studentEmail == userEmail() &&
+          !get(/databases/$(database)/documents/attempts/$(attemptId)).data.locked
+        );
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Platform | Login</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body data-page="login">
+  <main class="page-shell narrow">
+    <section class="card">
+      <h1>School Exam Platform</h1>
+      <p class="lead">Sign in with your NSW Education Google account to continue.</p>
+      <div id="auth-status" class="notice" aria-live="polite">Checking session...</div>
+      <button id="google-sign-in" class="primary-button" type="button">Sign in with Google</button>
+      <p class="help-text">Access is limited to users listed in the approved roster and using an <code>@education.nsw.gov.au</code> account.</p>
+    </section>
+  </main>
+
+  <script type="module" src="./js/auth.js"></script>
+</body>
+</html>
