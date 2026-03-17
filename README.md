@@ -120,6 +120,7 @@ Suggested document ids:
 - Add backend background jobs for long-running report generation.
 - Add tests for marking, auth, and rules behavior.
 - Review Firestore rules carefully before live deployment.
+- Remove the temporary bootstrap teacher allowlist once roster upload is working in production.
 
 ## Render deployment notes
 

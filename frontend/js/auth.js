@@ -10,6 +10,9 @@ import { auth, db } from "./firebase-init.js";
 const statusEl = document.querySelector("#auth-status");
 const signInButton = document.querySelector("#google-sign-in");
 const allowedDomain = "education.nsw.gov.au";
+const bootstrapTeacherEmails = new Set([
+  "troy.koglin1@education.nsw.gov.au"
+]);
 
 function setStatus(message, variant = "") {
   if (!statusEl) {
@@ -25,6 +28,18 @@ async function resolveUserRole(email) {
   const teacherDoc = await getDoc(doc(db, "teachers", normalizedEmail));
   if (teacherDoc.exists()) {
     return { role: "teacher", profile: teacherDoc.data() };
+  }
+
+  if (bootstrapTeacherEmails.has(normalizedEmail)) {
+    return {
+      role: "teacher",
+      profile: {
+        email: normalizedEmail,
+        name: "Bootstrap Teacher",
+        role: "teacher",
+        bootstrapAccess: true
+      }
+    };
   }
 
   const studentDoc = await getDoc(doc(db, "students", normalizedEmail));

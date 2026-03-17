@@ -14,7 +14,10 @@ service cloud.firestore {
     }
 
     function isTeacher() {
-      return isNswEducationUser() && exists(/databases/$(database)/documents/teachers/$(userEmail()));
+      return isNswEducationUser() && (
+        exists(/databases/$(database)/documents/teachers/$(userEmail())) ||
+        userEmail() == 'troy.koglin1@education.nsw.gov.au'
+      );
     }
 
     function isStudent() {

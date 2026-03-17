@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import Header, HTTPException
 from firebase_admin import auth as firebase_auth
 
+from services.config import settings
 from services.firestore_client import get_firestore_client
 
 
@@ -26,6 +27,23 @@ def get_authenticated_user(authorization: Optional[str] = Header(default=None)) 
     teacher = db.collection("teachers").document(email).get()
     if teacher.exists:
         return {"email": email, "role": "teacher", "profile": teacher.to_dict()}
+
+    bootstrap_teachers = {
+        item.strip().lower()
+        for item in settings.bootstrap_teacher_emails.split(",")
+        if item.strip()
+    }
+    if email in bootstrap_teachers:
+        return {
+            "email": email,
+            "role": "teacher",
+            "profile": {
+                "email": email,
+                "name": "Bootstrap Teacher",
+                "role": "teacher",
+                "bootstrapAccess": True,
+            },
+        }
 
     student = db.collection("students").document(email).get()
     if student.exists:
