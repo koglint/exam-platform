@@ -9,16 +9,19 @@
 <body data-page="instructions">
   <main class="page-shell">
     <section class="card">
-      <h1>Exam Instructions</h1>
+      <h1>Waiting Room</h1>
+      <p id="waiting-room-summary" class="lead">Loading your exam access details...</p>
+      <div id="waiting-room-meta" class="meta-grid"></div>
       <ul class="simple-list">
         <li>The exam is not timed.</li>
         <li>You can move between questions before submitting.</li>
         <li>Your answers save automatically when changed.</li>
         <li>Marks will not be shown online after submission.</li>
       </ul>
+      <div id="waiting-room-status" class="notice" aria-live="polite"></div>
       <div class="actions">
         <a class="secondary-button" href="./enter-code.html">Back</a>
-        <a class="primary-button" id="start-exam-link" href="./question.html">Start exam</a>
+        <button class="primary-button" id="start-exam-link" type="button" disabled>Start exam</button>
       </div>
     </section>
   </main>

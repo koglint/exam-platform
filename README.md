@@ -114,13 +114,14 @@ Suggested document ids:
 
 ## Notes for production hardening
 
+- The current Firestore rules are prototype-only and intentionally permissive so the unauthenticated student-code flow can be tested quickly.
 - Move frontend Firebase config to environment injection during deployment.
 - Replace basic CSV parsing with a robust parser that handles quoted values.
 - Tighten admin queries so teachers only monitor their own classes.
+- Reintroduce proper authentication and least-privilege rules before uploading any real exams, rosters, or answer keys.
 - Add backend background jobs for long-running report generation.
 - Add tests for marking, auth, and rules behavior.
 - Review Firestore rules carefully before live deployment.
-- Remove the temporary bootstrap teacher allowlist once roster upload is working in production.
 
 ## Render deployment notes
 

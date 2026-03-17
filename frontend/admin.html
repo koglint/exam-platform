@@ -10,7 +10,7 @@
   <main class="page-shell">
     <section class="card">
       <h1>Teacher Admin</h1>
-      <p class="lead">Manage rosters, exams, sessions, and live monitoring from one place.</p>
+      <p class="lead">Prototype admin area. This page is intentionally unrestricted while the architecture is being validated.</p>
     </section>
 
     <section class="card admin-grid">
@@ -45,6 +45,8 @@
           <input id="session-class-id" name="classId" type="text" required>
           <button class="primary-button" name="action" value="activate" type="submit">Create / Activate Session</button>
           <button class="secondary-button" name="action" value="deactivate" type="submit">Deactivate Session</button>
+          <button class="secondary-button" name="action" value="open-window" type="submit">Open Exam Start Window</button>
+          <button class="secondary-button" name="action" value="close-window" type="submit">Close Exam Start Window</button>
           <button class="secondary-button" id="release-results" type="button">Release Results</button>
         </form>
       </div>
@@ -60,6 +62,11 @@
     <section class="card">
       <h2>Live Monitoring</h2>
       <div id="monitoring-table" class="table-shell"></div>
+    </section>
+
+    <section class="card">
+      <h2>Session Codes</h2>
+      <div id="session-student-codes" class="table-shell"></div>
     </section>
 
     <section class="card">

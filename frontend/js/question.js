@@ -9,7 +9,7 @@ import {
   setDoc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { auth, db } from "./firebase-init.js";
+import { db } from "./firebase-init.js";
 import {
   applySavedAccessibilityPreferences,
   renderGlossaryTerms,
@@ -19,16 +19,17 @@ import {
 } from "./accessibility.js";
 import { postJson } from "./api.js";
 
-const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+const currentStudent = JSON.parse(sessionStorage.getItem("currentStudent") || "null");
 const examId = sessionStorage.getItem("currentExamId");
 const attemptId = sessionStorage.getItem("currentAttemptId");
+const sessionId = sessionStorage.getItem("currentSessionId");
 let questions = [];
 let attempt = null;
 let showAlternateWording = false;
 
 function requireStudentAttempt() {
-  if (!currentUser || currentUser.role !== "student" || !examId || !attemptId) {
-    window.location.href = "./login.html";
+  if (!currentStudent || !examId || !attemptId || !sessionId) {
+    window.location.href = "./enter-code.html";
     throw new Error("A valid student attempt is required.");
   }
 }
@@ -64,6 +65,9 @@ async function loadAttempt() {
   attempt = snapshot.data();
   if (attempt.locked) {
     window.location.href = "./submitted.html";
+  }
+  if (!attempt.examStartedAt) {
+    window.location.href = "./instructions.html";
   }
 }
 
@@ -163,6 +167,11 @@ async function saveResponse(questionId, selectedOption) {
     status: "in_progress"
   });
 
+  await setDoc(doc(db, "examSessions", sessionId, "sessionStudents", currentStudent.sessionStudentId), {
+    status: "in_progress",
+    lastSeenAt: serverTimestamp()
+  }, { merge: true });
+
   setActivity("Answer saved", "success");
 }
 
@@ -179,9 +188,12 @@ async function submitAttempt() {
     lastActivityAt: serverTimestamp()
   });
 
-  const user = auth.currentUser;
-  const idToken = user ? await user.getIdToken() : null;
-  await postJson("/markAttempt", { attemptId }, idToken);
+  await setDoc(doc(db, "examSessions", sessionId, "sessionStudents", currentStudent.sessionStudentId), {
+    status: "submitted",
+    lastSeenAt: serverTimestamp()
+  }, { merge: true });
+
+  await postJson("/markAttempt", { attemptId });
   window.location.href = "./submitted.html";
 }
 

@@ -10,13 +10,13 @@
   <main class="page-shell narrow">
     <section class="card">
       <h1>School Exam Platform</h1>
-      <p class="lead">Sign in with your NSW Education Google account to continue.</p>
-      <div id="auth-status" class="notice" aria-live="polite">Checking session...</div>
-      <button id="google-sign-in" class="primary-button" type="button">Sign in with Google</button>
-      <p class="help-text">Access is limited to users listed in the approved roster and using an <code>@education.nsw.gov.au</code> account.</p>
+      <p class="lead">Prototype entry point for student access and admin setup.</p>
+      <div class="actions">
+        <a class="primary-button" href="./enter-code.html">Student entry</a>
+        <a class="secondary-button" href="./admin.html">Open admin</a>
+      </div>
+      <p class="help-text">Students enter with an exam code and a student code. Admin is intentionally unrestricted in this prototype build.</p>
     </section>
   </main>
-
-  <script type="module" src="./js/auth.js"></script>
 </body>
 </html>

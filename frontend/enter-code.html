@@ -9,14 +9,26 @@
 <body data-page="enter-code">
   <main class="page-shell narrow">
     <section class="card">
-      <h1>Enter Exam Code</h1>
-      <p class="lead">Your teacher will provide a code when the exam session is active.</p>
+      <h1>Student Entry</h1>
+      <p class="lead">Enter the shared exam code and your personal student code.</p>
       <form id="enter-code-form">
         <label for="exam-code">Exam code</label>
         <input id="exam-code" name="examCode" type="text" maxlength="12" autocomplete="off" required>
+        <label for="student-code">Student code</label>
+        <input id="student-code" name="studentCode" type="text" maxlength="12" autocomplete="off" required>
         <button class="primary-button" type="submit">Continue</button>
       </form>
       <div id="enter-code-status" class="notice" aria-live="polite"></div>
+    </section>
+
+    <section id="identity-confirmation" class="card hidden">
+      <h2>Confirm Identity</h2>
+      <p class="lead">Show this screen to the supervising teacher, then confirm that the displayed student details are correct.</p>
+      <div id="identity-summary" class="meta-grid"></div>
+      <div class="actions">
+        <button id="confirm-identity" class="primary-button" type="button">Yes, that's me</button>
+        <button id="restart-entry" class="secondary-button" type="button">Start over</button>
+      </div>
     </section>
   </main>
 

@@ -2,6 +2,8 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
+  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
@@ -9,17 +11,10 @@ import {
   where,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { auth, db } from "./firebase-init.js";
+import { db } from "./firebase-init.js";
 import { postJson } from "./api.js";
 
-const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "null");
-
-function requireTeacher() {
-  if (!currentUser || currentUser.role !== "teacher") {
-    window.location.href = "./login.html";
-    throw new Error("Teacher session required.");
-  }
-}
+const adminIdentity = "prototype-admin";
 
 function setStatus(message, variant = "") {
   const el = document.querySelector("#admin-status");
@@ -69,6 +64,74 @@ function generateExamCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
+function generateStudentCode() {
+  return Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
+async function provisionSessionStudents(sessionId, classId) {
+  const studentsQuery = query(collection(db, "students"), where("class", "==", classId));
+  const snapshot = await getDocs(studentsQuery);
+  const batch = writeBatch(db);
+  const generatedRows = [];
+
+  snapshot.forEach((studentDoc) => {
+    const student = studentDoc.data();
+    const studentCode = generateStudentCode();
+    batch.set(doc(db, "examSessions", sessionId, "sessionStudents", studentDoc.id), {
+      studentEmail: student.email,
+      studentName: student.name,
+      classId,
+      studentCode,
+      confirmedIdentity: false,
+      status: "not_started",
+      lastSeenAt: null,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    generatedRows.push({
+      studentName: student.name,
+      studentEmail: student.email,
+      studentCode
+    });
+  });
+
+  await batch.commit();
+  renderSessionCodes(generatedRows);
+  return generatedRows;
+}
+
+function renderSessionCodes(rows) {
+  const shell = document.querySelector("#session-student-codes");
+  if (!shell) {
+    return;
+  }
+
+  if (!rows.length) {
+    shell.innerHTML = "<p>No student codes generated yet.</p>";
+    return;
+  }
+
+  shell.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Email</th>
+          <th>Student Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => `
+          <tr>
+            <td>${row.studentName}</td>
+            <td>${row.studentEmail}</td>
+            <td>${row.studentCode}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
 async function bindRosterForm() {
   const form = document.querySelector("#roster-form");
   if (!form) {
@@ -109,7 +172,7 @@ async function bindExamForm() {
         name: formData.get("name"),
         description: formData.get("description"),
         questionCount: 0,
-        createdBy: currentUser.email,
+        createdBy: adminIdentity,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -151,21 +214,67 @@ async function bindSessionForm() {
 
     try {
       const sessionId = `${examId}_${classId}`;
-      await setDoc(doc(db, "examSessions", sessionId), {
+      const examSnapshot = await getDoc(doc(db, "exams", examId));
+      const examName = examSnapshot.exists() ? examSnapshot.data().name : examId;
+      const baseSessionPayload = {
         examId,
         classId,
         examCode: generateExamCode(),
-        active: action === "activate",
+        examName,
         resultsReleased: false,
-        activationHistory: [{
-          timestamp: new Date().toISOString(),
-          teacherEmail: currentUser.email,
-          action: action === "activate" ? "activated" : "deactivated"
-        }],
         updatedAt: serverTimestamp()
-      }, { merge: true });
+      };
 
-      setStatus(`Session ${sessionId} ${action === "activate" ? "activated" : "deactivated"}.`, "success");
+      let patch = {};
+      let statusMessage = "";
+
+      if (action === "activate") {
+        patch = {
+          ...baseSessionPayload,
+          active: true,
+          examAccessEnabled: false,
+          activationHistory: [{
+            timestamp: new Date().toISOString(),
+            teacherEmail: adminIdentity,
+            action: "activated"
+          }]
+        };
+      } else if (action === "deactivate") {
+        patch = {
+          ...baseSessionPayload,
+          active: false,
+          examAccessEnabled: false,
+          activationHistory: [{
+            timestamp: new Date().toISOString(),
+            teacherEmail: adminIdentity,
+            action: "deactivated"
+          }]
+        };
+      } else if (action === "open-window") {
+        patch = {
+          examAccessEnabled: true,
+          updatedAt: serverTimestamp()
+        };
+      } else if (action === "close-window") {
+        patch = {
+          examAccessEnabled: false,
+          updatedAt: serverTimestamp()
+        };
+      }
+
+      await setDoc(doc(db, "examSessions", sessionId), patch, { merge: true });
+
+      if (action === "activate") {
+        const generatedRows = await provisionSessionStudents(sessionId, classId);
+        statusMessage = `Session ${sessionId} activated and ${generatedRows.length} student codes generated.`;
+      } else if (action === "deactivate") {
+        statusMessage = `Session ${sessionId} deactivated.`;
+      } else if (action === "open-window") {
+        statusMessage = `Exam start window opened for ${sessionId}.`;
+      } else if (action === "close-window") {
+        statusMessage = `Exam start window closed for ${sessionId}.`;
+      }
+      setStatus(statusMessage, "success");
     } catch (error) {
       setStatus(error.message, "error");
     }
@@ -182,9 +291,7 @@ async function bindSessionForm() {
         updatedAt: serverTimestamp()
       }, { merge: true });
 
-      const user = auth.currentUser;
-      const idToken = user ? await user.getIdToken() : null;
-      await postJson("/generateExamReports", { sessionId }, idToken);
+      await postJson("/generateExamReports", { sessionId });
       setStatus("Results released and report generation requested.", "success");
     } catch (error) {
       setStatus(error.message, "error");
@@ -210,7 +317,7 @@ async function bindAttemptControls() {
         locked: false,
         status: "in_progress",
         reopenedAt: serverTimestamp(),
-        reopenedBy: currentUser.email
+        reopenedBy: adminIdentity
       }, { merge: true });
       setStatus(`Attempt ${attemptId} reopened.`, "success");
     } catch (error) {
@@ -253,13 +360,12 @@ function bindMonitoringTable() {
 }
 
 function bootstrap() {
-  requireTeacher();
   bindRosterForm();
   bindExamForm();
   bindSessionForm();
   bindAttemptControls();
   bindMonitoringTable();
-  setStatus("Teacher admin ready.");
+  setStatus("Prototype admin ready.");
 }
 
 bootstrap();
