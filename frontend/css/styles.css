@@ -192,6 +192,15 @@ button.secondary-button {
   margin-bottom: 1rem;
 }
 
+.question-text p {
+  margin: 0 0 1rem;
+}
+
+.question-text .table-shell {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
 .question-image {
   max-width: 100%;
   border-radius: 12px;

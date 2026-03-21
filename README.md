@@ -107,6 +107,51 @@ For a fast end-to-end demo:
 - Activate a session for class `7A`
 - Use one of the generated student codes on the student entry page
 
+## Import the Year 7 assessment
+
+The repository now includes a prepared Year 7 multiple-choice assessment payload and supporting images.
+
+To import it directly into Firestore without using the admin exam upload flow:
+
+```bash
+cd backend
+python scripts/import_exam.py year7_assessment_task_1
+```
+
+This writes:
+
+- `exams/year7-assessment-task-1`
+- `exams/year7-assessment-task-1/questions/*`
+- `exams/year7-assessment-task-1/answerKeys/*`
+
+## Local exam import workflow
+
+If you are the only person importing exams and you will always do it from this machine, the simplest setup is:
+
+1. Create a local `.env` file in the repo root. The repo already ignores `.env`.
+2. Add your Firebase settings:
+
+```env
+FIREBASE_PROJECT_ID=your-firebase-project-id
+GOOGLE_APPLICATION_CREDENTIALS=C:\full\path\to\your\firebase-service-account.json
+```
+
+3. Add a payload module under `backend/exam_payloads/`.
+4. Run:
+
+```bash
+cd backend
+python scripts/import_exam.py your_payload_module_name
+```
+
+Example:
+
+```bash
+python scripts/import_exam.py year7_assessment_task_1
+```
+
+Use `backend/exam_payloads/template_payload.py` as the starting point for future exams.
+
 ## Frontend responsibilities
 
 - Authenticate with Firebase Google Sign-In
