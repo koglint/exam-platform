@@ -12,8 +12,8 @@ def mark_attempt(attempt_id: str, marker_email: str) -> dict:
     if not attempt:
         raise ValueError("Attempt not found.")
 
-    if not attempt.get("locked"):
-        raise ValueError("Attempt must be locked before marking.")
+    if not attempt.get("locked") and attempt.get("status") != "submitted":
+        raise ValueError("Attempt must be submitted before marking.")
 
     exam_id = attempt["examId"]
     questions = list_questions(exam_id)

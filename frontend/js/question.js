@@ -3,6 +3,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -26,6 +27,7 @@ const sessionId = sessionStorage.getItem("currentSessionId");
 let questions = [];
 let attempt = null;
 let showAlternateWording = false;
+let sessionClosed = false;
 
 function requireStudentAttempt() {
   if (!currentStudent || !examId || !attemptId || !sessionId) {
@@ -149,11 +151,39 @@ function renderQuestion(question, response) {
     imageEl.loading = "lazy";
     imageEl.classList.remove("hidden");
   } else {
+    imageEl.removeAttribute("src");
     imageEl.classList.add("hidden");
   }
 }
 
+function setExamInteractionDisabled(isDisabled) {
+  document.querySelectorAll("#question-form input").forEach((input) => {
+    input.disabled = isDisabled;
+  });
+  document.querySelector("#prev-question").disabled = isDisabled || getQuestionOrderFromUrl() === 1;
+  document.querySelector("#next-question").disabled = isDisabled || getQuestionOrderFromUrl() === questions.length;
+  document.querySelector("#submit-attempt").disabled = isDisabled;
+  document.querySelector("#alternate-wording-toggle").disabled = isDisabled;
+}
+
+function monitorSessionAccess() {
+  onSnapshot(doc(db, "examSessions", sessionId), (snapshot) => {
+    const session = snapshot.data();
+    sessionClosed = !session?.active;
+    setExamInteractionDisabled(sessionClosed);
+
+    if (sessionClosed) {
+      setActivity("This exam has been closed by the teacher.", "error");
+    }
+  });
+}
+
 async function saveResponse(questionId, selectedOption) {
+  if (sessionClosed) {
+    setActivity("This exam has been closed by the teacher.", "error");
+    return;
+  }
+
   const responseRef = doc(db, "attempts", attemptId, "responses", questionId);
   await setDoc(responseRef, {
     questionId,
@@ -176,13 +206,17 @@ async function saveResponse(questionId, selectedOption) {
 }
 
 async function submitAttempt() {
-  const confirmed = window.confirm("Submit your exam? You will not be able to change answers unless a teacher reopens the attempt.");
+  if (sessionClosed) {
+    setActivity("This exam has been closed by the teacher.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm("Submit your exam? Your answers will be saved, and you can still re-enter while the teacher keeps the exam session open.");
   if (!confirmed) {
     return;
   }
 
   await updateDoc(doc(db, "attempts", attemptId), {
-    locked: true,
     status: "submitted",
     submittedAt: serverTimestamp(),
     lastActivityAt: serverTimestamp()
@@ -213,6 +247,10 @@ async function renderCurrentQuestion(order, responses) {
 
 async function bindEvents(responses) {
   document.querySelector("#question-form").addEventListener("change", async (event) => {
+    if (sessionClosed) {
+      return;
+    }
+
     if (event.target.name !== "selectedOption") {
       return;
     }
@@ -225,10 +263,16 @@ async function bindEvents(responses) {
   });
 
   document.querySelector("#prev-question").addEventListener("click", () => {
+    if (sessionClosed) {
+      return;
+    }
     renderCurrentQuestion(getQuestionOrderFromUrl() - 1, responses);
   });
 
   document.querySelector("#next-question").addEventListener("click", () => {
+    if (sessionClosed) {
+      return;
+    }
     renderCurrentQuestion(getQuestionOrderFromUrl() + 1, responses);
   });
 
@@ -248,6 +292,7 @@ async function bootstrap() {
 
   try {
     await loadAttempt();
+    monitorSessionAccess();
     await loadQuestions();
     const responses = await loadResponses();
     await bindEvents(responses);

@@ -291,6 +291,31 @@ async function bindSessionForm() {
     return;
   }
 
+  async function lockSessionAttempts(sessionId) {
+    const attemptsQuery = query(collection(db, "attempts"), where("sessionId", "==", sessionId));
+    const attemptsSnapshot = await getDocs(attemptsQuery);
+    const attemptsBatch = writeBatch(db);
+
+    attemptsSnapshot.forEach((attemptDoc) => {
+      attemptsBatch.set(doc(db, "attempts", attemptDoc.id), {
+        locked: true,
+        status: "submitted",
+        submittedAt: serverTimestamp(),
+        lastActivityAt: serverTimestamp()
+      }, { merge: true });
+    });
+
+    const studentsSnapshot = await getDocs(collection(db, "examSessions", sessionId, "sessionStudents"));
+    studentsSnapshot.forEach((studentDoc) => {
+      attemptsBatch.set(doc(db, "examSessions", sessionId, "sessionStudents", studentDoc.id), {
+        status: "submitted",
+        lastSeenAt: serverTimestamp()
+      }, { merge: true });
+    });
+
+    await attemptsBatch.commit();
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = new FormData(form);
@@ -354,7 +379,8 @@ async function bindSessionForm() {
         const generatedRows = await provisionSessionStudents(sessionId, classId);
         statusMessage = `Session ${sessionId} activated and ${generatedRows.length} student codes generated.`;
       } else if (action === "deactivate") {
-        statusMessage = `Session ${sessionId} deactivated.`;
+        await lockSessionAttempts(sessionId);
+        statusMessage = `Session ${sessionId} deactivated and student access locked.`;
       } else if (action === "open-window") {
         statusMessage = `Exam start window opened for ${sessionId}.`;
       } else if (action === "close-window") {

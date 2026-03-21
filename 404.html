@@ -2,11 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=./frontend/login.html">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exam Platform</title>
   <script>
-    window.location.replace("./frontend/login.html");
+    (function () {
+      const path = window.location.pathname.replace(/\/+$/, "");
+      const frontendIndex = path.indexOf("/frontend");
+      const target = frontendIndex >= 0
+        ? `${path.slice(0, frontendIndex)}/frontend/login.html`
+        : `${path.replace(/\/404\.html$/, "")}/frontend/login.html`;
+
+      window.location.replace(target);
+    })();
   </script>
 </head>
 <body>

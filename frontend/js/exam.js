@@ -95,18 +95,30 @@ async function createOrResumeAttempt(sessionData, studentRecord) {
       createdAt: serverTimestamp()
     });
   } else {
+    const existingAttempt = attemptSnapshot.data();
+    const resumedStatus = existingAttempt.examStartedAt ? "in_progress" : "waiting";
+
     await setDoc(attemptRef, {
-      status: attemptSnapshot.data().locked ? "submitted" : "waiting",
+      locked: false,
+      status: resumedStatus,
       confirmedIdentityAt: serverTimestamp(),
       waitingRoomEnteredAt: serverTimestamp(),
-      lastActivityAt: serverTimestamp()
+      lastActivityAt: serverTimestamp(),
+      reopenedAt: serverTimestamp(),
+      submittedAt: existingAttempt.locked || existingAttempt.status === "submitted"
+        ? null
+        : existingAttempt.submittedAt || null
     }, { merge: true });
   }
+
+  const updatedAttemptSnapshot = await getDoc(attemptRef);
+  const updatedAttempt = updatedAttemptSnapshot.data() || {};
+  const sessionStudentStatus = updatedAttempt.examStartedAt ? "in_progress" : "waiting";
 
   await setDoc(doc(db, "examSessions", sessionId, "sessionStudents", studentRecord.id), {
     confirmedIdentity: true,
     confirmedIdentityAt: serverTimestamp(),
-    status: "waiting",
+    status: sessionStudentStatus,
     attemptId,
     lastSeenAt: serverTimestamp()
   }, { merge: true });
@@ -166,6 +178,7 @@ async function handleEnterCodePage() {
         classId: session.classId,
         examCode: session.examCode,
         examName: session.examName || "Exam",
+        active: session.active,
         student
       });
 
@@ -251,6 +264,7 @@ async function setupInstructionsPage() {
   }
 
   const attempt = attemptDoc.data();
+  const resumeOrder = attempt.currentQuestionOrder || 1;
   setText("#waiting-room-summary", `${currentStudent.studentName}, wait for the teacher's verbal instruction before starting.`);
   const meta = document.querySelector("#waiting-room-meta");
   if (meta) {
@@ -264,6 +278,10 @@ async function setupInstructionsPage() {
 
   const statusEl = document.querySelector("#waiting-room-status");
   const startButton = document.querySelector("#start-exam-link");
+  if (attempt.examStartedAt) {
+    startButton.textContent = "Resume exam";
+  }
+
   onSnapshot(doc(db, "examSessions", sessionId), (sessionSnapshot) => {
     const session = sessionSnapshot.data();
     if (!session?.active) {
@@ -282,16 +300,20 @@ async function setupInstructionsPage() {
   });
 
   startButton.addEventListener("click", async () => {
-    await updateDoc(doc(db, "attempts", attemptId), {
-      examStartedAt: serverTimestamp(),
+    const patch = {
       status: "in_progress",
       lastActivityAt: serverTimestamp()
-    });
+    };
+    if (!attempt.examStartedAt) {
+      patch.examStartedAt = serverTimestamp();
+    }
+
+    await updateDoc(doc(db, "attempts", attemptId), patch);
     await setDoc(doc(db, "examSessions", sessionId, "sessionStudents", currentStudent.sessionStudentId), {
       status: "in_progress",
       lastSeenAt: serverTimestamp()
     }, { merge: true });
-    window.location.href = "./question.html?order=1";
+    window.location.href = `./question.html?order=${resumeOrder}`;
   });
 }
 
